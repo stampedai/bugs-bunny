@@ -2,7 +2,6 @@
   import {
     FormGroup,
     Input,
-    Button,
     Card,
     CardBody,
     CardTitle,
@@ -11,29 +10,46 @@
     Container,
     Tooltip,
   } from "sveltestrap";
+
   import { draw } from "../lib/draw";
   import { captureScreen } from "../lib/capture";
+  import { notifySlack } from "../lib/slack";
+  import { annotateWithText } from "../lib/annotate";
+  import { getUser } from "../lib/getUser";
+  import { uploadImage } from "../lib/base64ToFile";
 
   let reportSubmitted = false;
   let filter = { urls: ["https://app.stamped.ai/**"] };
   let opt_extraInfoSpec: string[] = [];
   let reportText: string;
+  let screenshot: any = {
+    canvas: null,
+    context: null,
+  };
 
   const capturePipeline = () => {
     const { canvas, context } = captureScreen();
     draw(canvas, context);
+    annotateWithText(canvas, context);
+
+    screenshot = { canvas, context };
   };
 
   const callback = (details: any) => {
     console.log(details);
     let key = details.requestId;
-    console.log(key)
+    console.log(key);
     chrome.storage.local.set({ key: details }, () => {
-      if (chrome.runtime.lastError) console.error(`Error setting ${key} to ${JSON.stringify(details)} - ${chrome.runtime.lastError.message}`);
+      if (chrome.runtime.lastError)
+        console.error(
+          `Error setting ${key} to ${JSON.stringify(details)} - ${
+            chrome.runtime.lastError.message
+          }`
+        );
     });
     // Getting
     chrome.storage.local.get(key, (data) => {
-      console.log("data", data)
+      console.log("data", data);
     });
   };
 
@@ -44,34 +60,13 @@
     opt_extraInfoSpec
   );
 
-  const submitReport = () => {
-    // https://hooks.slack.com/workflows/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
-    // {
-    //   "timestamp": "Example text",
-    //   "report": "Example text"
-    // }
-    fetch(
-      "https://hooks.slack.com/workflows/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",
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          timestamp: new Date().toISOString(),
-          report: reportText,
-        }),
-      }
-    )
-      .then((res) => {
-        console.log(res);
-        reportSubmitted = true;
-      })
-      .catch((err) => {
-        console.log(err);
-        alert(err);
-        reportSubmitted = false;
-      });
+  const submitReport = async () => {
+    let author = getUser();
+    let file: File = await uploadImage(screenshot.canvas.toDataURL());
+    if (reportText) {
+      notifySlack(reportText, file, author);
+      reportSubmitted = true;
+    }
   };
 </script>
 
@@ -85,17 +80,17 @@
   <div id="screenshot" />
   <Card
     class="text-center"
-    style="background: url('../bugs_bunny.png') center bottom no-repeat; background-size: 40%;"
+    style="padding: 1rem; background: url('../bugs_bunny.png') left bottom no-repeat; background-size: 35%; border: inset 10px transparent;"
   >
     <CardTitle
-      style="font-family: 'Bangers', cursive; font-size: xx-large; color: #46908b; -webkit-text-stroke: 1px black;"
+      style="font-family: 'Bangers', cursive; font-size: xx-large; color: #46908b; margin-top: 1em;"
       >Bugs Bunny</CardTitle
     >
     <CardSubtitle
-      style="font-family: 'Caveat Brush', cursive; font-size: xx-large; color: #46908b; -webkit-text-stroke: 1px black;"
+      style="font-family: 'Caveat Brush', cursive; font-size: large; color: #46908b;"
       >Cool! Another bug! <br /> It looks like you tried to..</CardSubtitle
     >
-    <CardBody style="opacity: 0.75;">
+    <CardBody style="opacity: 0.85;">
       <Alert
         color="success"
         isOpen={reportSubmitted}
@@ -104,13 +99,13 @@
         Bug report submitted!
       </Alert>
 
-      <FormGroup>
+      <FormGroup style="margin-left: 40%;">
         <Input
           id="additionalContext"
           type="textarea"
           label="Give additional context"
           style="height: 300px;"
-          bind:value="{reportText}"
+          bind:value={reportText}
         />
         <Tooltip target="additionalContext" placement="top"
           >Is there any more context to be provided?</Tooltip
@@ -119,15 +114,9 @@
     </CardBody>
 
     <Container>
-      <Button
-        style="margin-bottom: 10px; background-color: #46908b; color: white;"
-        class="save-button"
-        on:click={submitReport}>Submit</Button
-      >
-      <Button
-        style="margin-bottom: 10px; background-color: #46908b; color: white;"
-        class="save-button"
-        on:click={capturePipeline}>Take Screenshot</Button
+      <button class="save-button" on:click={submitReport}>Submit</button>
+      <button class="save-button" on:click={capturePipeline}
+        >Take Screenshot</button
       >
     </Container>
   </Card>
@@ -136,5 +125,17 @@
 <style>
   main {
     width: 800px;
+  }
+  button {
+    margin-bottom: 10px;
+    background-color: #46908b;
+    color: white;
+    border: none;
+    padding: 1em;
+    border-radius: 5px;
+  }
+  button:hover {
+    background-color: #185e59;
+    color: white;
   }
 </style>

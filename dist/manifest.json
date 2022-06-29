@@ -20,7 +20,8 @@
     "storage",
     "activeTab",
     "scripting",
-    "webRequest"
+    "webRequest",
+    "identity"
   ],
   "action": {
     "default_popup": "popup/index.html",

@@ -1,12 +1,8 @@
 const draw = (canvas: HTMLCanvasElement, context: CanvasRenderingContext2D) => {
-  document.oncontextmenu = function () {
-    return false;
-  };
-
-  // list of all strokes drawn
+  // list of all strokes
   const drawings: any[] = [];
 
-  // coordinates of our cursor
+  // coordinates of cursor
   let cursorX;
   let cursorY;
   let prevCursorX: number;
@@ -16,45 +12,30 @@ const draw = (canvas: HTMLCanvasElement, context: CanvasRenderingContext2D) => {
   let offsetX = 0;
   let offsetY = 0;
 
-  // zoom amount
   let scale = 1;
 
   // convert coordinates
-  function toScreenX(xTrue: number) {
-    return (xTrue + offsetX) * scale;
-  }
-  function toScreenY(yTrue: number) {
-    return (yTrue + offsetY) * scale;
-  }
-  function toTrueX(xScreen: number) {
-    return xScreen / scale - offsetX;
-  }
-  function toTrueY(yScreen: number) {
-    return yScreen / scale - offsetY;
+  const toScreenX = (xTrue: number) => (xTrue + offsetX) * scale;
+  const toScreenY = (yTrue: number) => (yTrue + offsetY) * scale;
+  const toTrueX = (xScreen: number) => xScreen / scale - offsetX;
+  const toTrueY = (yScreen: number) => yScreen / scale - offsetY;
+
+  const drawLine = (x0: number, y0: number, x1: number, y1: number) => {
+    context.beginPath();
+    context.moveTo(x0, y0);
+    context.lineTo(x1, y1);
+    context.strokeStyle = "#000";
+    context.lineWidth = 2;
+    context.stroke();
   }
 
-  function redrawCanvas() {
-    // set the canvas to the size of the window
-    canvas.width = document.body.clientWidth;
-    canvas.height = document.body.clientHeight;
-
-    context.fillStyle = "#fff";
-    context.fillRect(0, 0, canvas.width, canvas.height);
-    for (let i = 0; i < drawings.length; i++) {
-      const line = drawings[i];
-      drawLine(
-        toScreenX(line.x0),
-        toScreenY(line.y0),
-        toScreenX(line.x1),
-        toScreenY(line.y1)
-      );
-    }
-  }
-  redrawCanvas();
-
-  // if the window changes size, redraw the canvas
-  window.addEventListener("resize", (event) => {
-    redrawCanvas();
+  // listen for a ctrl-z event
+  window.addEventListener("keydown", (event) => {
+    console.log("ctrl-z hello?")
+    drawings.pop();
+    drawings.forEach((line) => {
+      drawLine(toScreenX(line.x0), toScreenY(line.y0), toScreenX(line.x1), toScreenY(line.y1))
+    })
   });
 
   // Mouse Event Handlers
@@ -65,6 +46,7 @@ const draw = (canvas: HTMLCanvasElement, context: CanvasRenderingContext2D) => {
 
   // mouse functions
   let leftMouseDown = false;
+
   function onMouseDown(event: MouseEvent) {
     // detect left clicks
     if (event.button == 0) {
@@ -81,11 +63,11 @@ const draw = (canvas: HTMLCanvasElement, context: CanvasRenderingContext2D) => {
     prevCursorX = event.pageX;
     prevCursorY = event.pageY;
   }
+
   function onMouseMove(event: MouseEvent) {
     // get mouse position
     cursorX = event.pageX;
     cursorY = event.pageY;
-    console.log(cursorX, cursorY);
     const scaledX = toTrueX(cursorX);
     const scaledY = toTrueY(cursorY);
     const prevScaledX = toTrueX(prevCursorX);
@@ -105,17 +87,9 @@ const draw = (canvas: HTMLCanvasElement, context: CanvasRenderingContext2D) => {
     prevCursorX = cursorX;
     prevCursorY = cursorY;
   }
+
   function onMouseUp() {
     leftMouseDown = false;
-  }
-  function drawLine(x0: number, y0: number, x1: number, y1: number) {
-    console.log(x0, y0, x1, y1);
-    context.beginPath();
-    context.moveTo(x0, y0);
-    context.lineTo(x1, y1);
-    context.strokeStyle = "#000";
-    context.lineWidth = 2;
-    context.stroke();
   }
 }
 
