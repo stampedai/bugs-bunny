@@ -26,7 +26,7 @@ var base64ToFile = (function (exports) {
         });
     }
 
-    const uploadImage = (b64img) => __awaiter(void 0, void 0, void 0, function* () { return yield urltoFile(b64img, 'attachment.jpg', base64MimeType(b64img)); });
+    const uploadImage = (b64img) => __awaiter(void 0, void 0, void 0, function* () { return yield urltoFile(b64img, 'attachment.png', base64MimeType(b64img)); });
     //return a promise that resolves with a File instance
     const urltoFile = (url, filename, mimeType) => {
         return (fetch(url)

@@ -6,11 +6,11 @@ var capture = (function (exports) {
         const context = canvas.getContext("2d");
         chrome.tabs.captureVisibleTab(null, { format: "png" }).then((data) => {
             canvas.width = 800;
-            canvas.height = 500;
+            canvas.height = 475;
             const image = new Image();
-            if (window.devicePixelRatio > 1) {
-                context.scale(1 / window.devicePixelRatio, 1 / window.devicePixelRatio);
-            }
+            // if (window.devicePixelRatio > 1) {
+            //   context.scale(1 / window.devicePixelRatio, 1 / window.devicePixelRatio);
+            // }
             image.src = data;
             image.onload = () => {
                 setTimeout(() => {

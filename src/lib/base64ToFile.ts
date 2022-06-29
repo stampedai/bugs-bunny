@@ -1,4 +1,4 @@
-const uploadImage = async (b64img: string) => await urltoFile(b64img, 'attachment.jpg', base64MimeType(b64img));
+const uploadImage = async (b64img: string) => await urltoFile(b64img, 'attachment.png', base64MimeType(b64img));
 
 //return a promise that resolves with a File instance
 const urltoFile = (url: any, filename: any, mimeType: any) => {

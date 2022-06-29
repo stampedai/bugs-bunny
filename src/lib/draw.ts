@@ -24,19 +24,10 @@ const draw = (canvas: HTMLCanvasElement, context: CanvasRenderingContext2D) => {
     context.beginPath();
     context.moveTo(x0, y0);
     context.lineTo(x1, y1);
-    context.strokeStyle = "#000";
+    context.strokeStyle = "red";
     context.lineWidth = 2;
     context.stroke();
   }
-
-  // listen for a ctrl-z event
-  window.addEventListener("keydown", (event) => {
-    console.log("ctrl-z hello?")
-    drawings.pop();
-    drawings.forEach((line) => {
-      drawLine(toScreenX(line.x0), toScreenY(line.y0), toScreenX(line.x1), toScreenY(line.y1))
-    })
-  });
 
   // Mouse Event Handlers
   canvas.addEventListener("mousedown", onMouseDown);

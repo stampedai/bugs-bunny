@@ -3,10 +3,6 @@ import svelte from "rollup-plugin-svelte";
 import sveltePreprocess from "svelte-preprocess";
 import css from "rollup-plugin-css-only";
 import resolve from "@rollup/plugin-node-resolve";
-import { config as configDotenv } from 'dotenv';
-import replace from '@rollup/plugin-replace';
-
-configDotenv();
 
 export default [{
     input: ["src/content-scripts/index.ts"],

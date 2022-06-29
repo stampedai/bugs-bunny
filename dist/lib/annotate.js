@@ -8,8 +8,7 @@ var annotate = (function (exports) {
                 window.addEventListener("click", (event) => {
                     const text = prompt("Add an annotation");
                     if (text) {
-                        context.font = "12px Arial";
-                        context.fillStyle = "black";
+                        context.font = "bold 16px Arial";
                         context.fillText(text, event.clientX, event.clientY);
                         document.body.style.cursor = "default";
                     }

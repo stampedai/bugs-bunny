@@ -19,8 +19,6 @@
   import { uploadImage } from "../lib/base64ToFile";
 
   let reportSubmitted = false;
-  let filter = { urls: ["https://app.stamped.ai/**"] };
-  let opt_extraInfoSpec: string[] = [];
   let reportText: string;
   let screenshot: any = {
     canvas: null,
@@ -35,36 +33,11 @@
     screenshot = { canvas, context };
   };
 
-  const callback = (details: any) => {
-    console.log(details);
-    let key = details.requestId;
-    console.log(key);
-    chrome.storage.local.set({ key: details }, () => {
-      if (chrome.runtime.lastError)
-        console.error(
-          `Error setting ${key} to ${JSON.stringify(details)} - ${
-            chrome.runtime.lastError.message
-          }`
-        );
-    });
-    // Getting
-    chrome.storage.local.get(key, (data) => {
-      console.log("data", data);
-    });
-  };
-
-  chrome.runtime.onInstalled.addListener(callback);
-  chrome.webRequest.onResponseStarted.addListener(
-    callback,
-    filter,
-    opt_extraInfoSpec
-  );
-
   const submitReport = async () => {
     let author = getUser();
-    let file: File = await uploadImage(screenshot.canvas.toDataURL());
+    let image = await uploadImage(screenshot.canvas.toDataURL()).then(res => res);
     if (reportText) {
-      notifySlack(reportText, file, author);
+      notifySlack(reportText, image, author);
       reportSubmitted = true;
     }
   };
@@ -104,7 +77,7 @@
           id="additionalContext"
           type="textarea"
           label="Give additional context"
-          style="height: 300px;"
+          style="height: 300px; background-color: #f5f5f5;"
           bind:value={reportText}
         />
         <Tooltip target="additionalContext" placement="top"

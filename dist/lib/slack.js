@@ -2,7 +2,19 @@ var slack = (function (exports) {
     'use strict';
 
     const notifySlack = (reportText, file, author) => {
-        fetch("https://hooks.slack.com/workflows/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", {
+        const channel = "";
+        const request = new XMLHttpRequest();
+        const formData = new FormData();
+        request.open("POST", "https://slack.com/api/files.upload", true);
+        request.onreadystatechange = () => {
+            if (request.readyState === 4 && request.status === 200) {
+                console.log(request.responseText);
+            }
+        };
+        formData.append("token", "");
+        formData.append("file", file);
+        formData.append("channels", channel);
+        fetch("", {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
@@ -21,19 +33,7 @@ var slack = (function (exports) {
             console.log(err);
             alert(err);
         });
-        fetch("https://slack.com/api/files.upload", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-                Authorization: `Bearer xoxb-282480151991-3749989176401-YGAFNsat4NE8pCIRPGssUjEd`,
-            },
-            body: JSON.stringify({
-                // channels: "C02UNUD9USK",
-                channels: "C9XK6B3L1",
-                file,
-                title: "Attached file",
-            }),
-        });
+        request.send(formData);
     };
 
     exports.notifySlack = notifySlack;
