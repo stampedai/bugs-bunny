@@ -1,7 +1,7 @@
 var base64ToFile = (function (exports) {
     'use strict';
 
-    /*! *****************************************************************************
+    /******************************************************************************
     Copyright (c) Microsoft Corporation.
 
     Permission to use, copy, modify, and/or distribute this software for any
@@ -26,7 +26,7 @@ var base64ToFile = (function (exports) {
         });
     }
 
-    const uploadImage = (b64img) => __awaiter(void 0, void 0, void 0, function* () { return yield urltoFile(b64img, 'attachment.png', base64MimeType(b64img)); });
+    const uploadImage = (b64img, filename = "attachment.png") => __awaiter(void 0, void 0, void 0, function* () { return yield urltoFile(b64img, filename, base64MimeType(b64img)); });
     //return a promise that resolves with a File instance
     const urltoFile = (url, filename, mimeType) => {
         return (fetch(url)

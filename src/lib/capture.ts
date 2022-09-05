@@ -1,14 +1,11 @@
 const captureScreen = () => {
   const canvas = document.createElement("canvas");
   const context = canvas.getContext("2d");
+  let image = new Image();
 
   chrome.tabs.captureVisibleTab(null, { format: "png" }).then((data: any) => {
     canvas.width = 800;
-    canvas.height = 475;
-    const image = new Image();
-    // if (window.devicePixelRatio > 1) {
-    //   context.scale(1 / window.devicePixelRatio, 1 / window.devicePixelRatio);
-    // }
+    canvas.height = 395;
     image.src = data;
     image.onload = () => {
       setTimeout(() => {
@@ -16,9 +13,13 @@ const captureScreen = () => {
       }, 50);
     };
     document.getElementById("screenshot")!.appendChild(canvas);
+    document.getElementById("pen")!.classList.toggle("hidden");
+    document.getElementById("highlight")!.classList.toggle("hidden");
+    document.getElementById("marker")!.classList.toggle("hidden");
+    document.getElementById("text")!.classList.toggle("hidden");
   });
 
-  return { canvas, context };
+  return { canvas, context, image };
 };
 
 export { captureScreen };

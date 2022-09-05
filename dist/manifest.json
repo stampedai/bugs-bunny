@@ -21,10 +21,14 @@
     "activeTab",
     "scripting",
     "webRequest",
-    "identity"
+    "identity",
+    "identity.email",
+    "webNavigation",
+    "tabs"
   ],
   "action": {
     "default_popup": "popup/index.html",
+    "default_title": "Bugs Bunny",
     "default_icon": {
       "16": "icon.png",
       "32": "icon.png",

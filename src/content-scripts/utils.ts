@@ -1,5 +1,3 @@
-const util = () => {
-  console.log(chrome.identity.getProfileUserInfo(cb => cb))
-}
+const util = () => {}
 
 export { util }

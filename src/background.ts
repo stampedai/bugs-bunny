@@ -1,29 +1,32 @@
-// console.log(chrome.identity.getAuthToken({ 'interactive': true }, (cb) => cb));
-// const getUser: any = () => chrome.identity.getProfileUserInfo(callback) as any;
-// console.log(getUser());
-const getUser = () => "";
-
-let filter = { urls: ["https://app.stamped.ai/**"] };
-let opt_extraInfoSpec: string[] = [];
+let filter: any = { urls: ["https://*.stamped.ai/*"], types: ["xmlhttprequest"] };
 
 const callback = (details: any) => {
   if (details) {
-    console.log(details)
-    const errorRegex = /^4|^5/;
-    const { statusCode } = details;
-    if (errorRegex.test(statusCode)) {
-      console.log("error!")
-    } else {
-      console.log("no error!")
-    }
+    let queryOptions = { active: true, lastFocusedWindow: true };
+    chrome.tabs.query(queryOptions).then((tabs) => {
+      let tab = tabs[0];
+      if (tab) {
+        const errorRegex = /^4|^5/;
+        const { statusCode } = details;
+        if (tab.url.match(/https:\/\/*.stamped.ai\/*$/) && errorRegex.test(statusCode)) {
+          if (errorRegex.test(statusCode)) {
+            console.log("error!")
+          } else {
+            console.log("no error!")
+          }
+        }
+      };
+    });
   }
 };
 
+chrome.action.onClicked.addListener(callback);
 chrome.runtime.onInstalled.addListener(callback);
-chrome.webRequest.onResponseStarted.addListener(
+chrome.webNavigation.onCompleted.addListener(
+  callback,
+  filter
+);
+chrome.webRequest.onHeadersReceived.addListener(
   callback,
   filter,
-  opt_extraInfoSpec
-);
-
-export { getUser };
+)

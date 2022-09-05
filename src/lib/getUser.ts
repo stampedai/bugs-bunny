@@ -1,4 +1,12 @@
-// const getUser: any = () => chrome.identity.getProfileUserInfo(userInfo => userInfo.email) as any;
-const getUser: any = () => "";
+const getUser: any = async () => {
+  let user;
+  return new Promise((resolve, reject) => {
+    chrome.identity.getProfileUserInfo({ 'accountStatus': 'ANY' as chrome.identity.AccountStatus }, (info) => {
+      const { email, id } = info;
+      user = { email, id };
+      resolve(user);
+    });
+  });
+};
 
 export { getUser };
