@@ -1,7 +1,8 @@
 var slack = (function (exports) {
     'use strict';
 
-    const notifySlack = (reportText, files, author) => {
+    const notifySlack = (title, reportText, files, author) => {
+        let id = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
         const channel = "";
         fetch("", {
             method: "POST",
@@ -9,10 +10,12 @@ var slack = (function (exports) {
                 "Content-Type": "application/json",
             },
             body: JSON.stringify({
-                timestamp: new Date().toISOString(),
+                title: title + " ->",
+                timestamp: `${new Date().toISOString()} - jiraTrigger`,
                 report: reportText,
                 actionTrace: "Action trace",
                 author: author,
+                id: id,
             }),
         })
             .then((res) => {
@@ -26,6 +29,7 @@ var slack = (function (exports) {
                 formData.append("token", "");
                 formData.append("file", file);
                 formData.append("channels", channel);
+                formData.append("initial_comment", id);
                 request.send(formData);
             });
         })

@@ -20,6 +20,7 @@
 
   let reportSubmitted = false;
   let reportText: string;
+  let title: string;
   let screenshot: any = {
     canvas: null,
     context: null,
@@ -35,6 +36,9 @@
   }
 
   addEventListener("keydown", (event: KeyboardEvent) => {
+    if (reportText) {
+      reportSubmitted = false;
+    }
     if (event.ctrlKey && event.key === "z") {
       if (screenshot.canvas && screenshot.context && drawings.length > 0) {
         drawings.pop();
@@ -85,7 +89,7 @@
 
   // add a bi weekly jira update to slack
 
-  const submitBug = async () => {
+  const submitRequest = async (type: string) => {
     let author = await getUser();
     author.email ? author : author.email = "Unknown";
     if (screenshot.canvas) {
@@ -93,36 +97,50 @@
         if (res) {
           filesList.push(res);
           if (reportText) {
-            notifySlack(reportText, filesList, author.email);
+            notifySlack(`${type}: ${title}`, reportText, filesList, author.email);
             reportSubmitted = true;
           }
           return res;
         }
       });
+    } else {
+      if (reportText) {
+        notifySlack(`${type}: ${title}`, reportText, filesList, author.email);
+        reportSubmitted = true;
+      }
     }
-  };
-
-  const submitIdea = async () => {
-    let author = await getUser();
-    author.email ? author : (author.email = "Unknown");
-    let image: any;
-    if (screenshot.canvas) {
-      image = await uploadImage(screenshot.canvas.toDataURL()).then((res) => {
-        if (res) {
-          if (reportText) {
-            notifySlack(reportText, image, author);
-            reportSubmitted = true;
-          }
-          return res;
-        }
-      });
-    }
+    (document.getElementById("title") as HTMLInputElement).value = "";
+    (document.getElementById("additionalContext") as HTMLInputElement).value = "";
+    (document.getElementById("files") as HTMLInputElement).value = "";
+    title = "";
+    reportText = "";
+    filesList = [];
   };
 </script>
 
 <svelte:head>
   <style>
     @import url("https://fonts.googleapis.com/css2?family=Bangers&family=Caveat+Brush&family=Inter:wght@100;200;300;400;500;600;700;800;900&display=swap");
+
+    main {
+      width: 800px;
+    }
+    button {
+      margin-bottom: 10px;
+      background-color: #46908b;
+      color: white;
+      border: none;
+      padding: 1em;
+      border-radius: 5px;
+    }
+    button:hover {
+      background-color: #185e59;
+      color: white;
+    }
+
+    .hidden {
+      display: none;
+    }
   </style>
 </svelte:head>
 
@@ -591,7 +609,7 @@
     style="padding: 1rem; background: url('../bugs_bunny.png') left bottom no-repeat; background-size: 35%; border: inset 10px transparent;"
   >
     <CardTitle
-      style="font-family: 'Bangers', cursive; font-size: xx-large; color: #46908b; margin-top: 1em;"
+      style="font-family: 'Bangers', cursive; font-size: xx-large; color: #46908b; margin-top: 0; text-align: left;"
       >Bugs Bunny</CardTitle
     >
     <CardBody style="opacity: 0.85;">
@@ -605,17 +623,25 @@
 
       <FormGroup style="margin-left: 40%;">
         <Input
+          id="title"
+          label="Descriptive Title"
+          style="height: 2em; background-color: #f5f5f5; margin-bottom: 1em;"
+          placeholder="Enter a descriptive title"
+          bind:value={title}
+        />
+        <Input
           id="additionalContext"
           type="textarea"
           label="Give additional context"
           style="height: 300px; background-color: #f5f5f5;"
+          placeholder="Give context to help the team understand the request"
           bind:value={reportText}
         />
         <Input
           id="files"
           type="file"
           label="Attach files"
-          style="background-color: #f5f5f5;"
+          style="background-color: #f5f5f5; margin-top: 1em;"
           on:change={(e)=>onFileSelected(e)}
           bind:this={fileInput}
         />
@@ -625,34 +651,10 @@
       </FormGroup>
     </CardBody>
 
-    <Container>
-      <button class="save-button" on:click={submitBug}>Submit as bug</button>
-      <button class="save-button" on:click={submitIdea}>Submit as idea</button>
-      <button class="save-button" on:click={capturePipeline}
-        >Take Screenshot</button
-      >
+    <Container style="margin-left: 20%;">
+      <button class="save-button" on:click={() => submitRequest("bug")} disabled={reportSubmitted || !reportText}>Submit as bug</button>
+      <button class="save-button" on:click={() => submitRequest("idea")} disabled={reportSubmitted || !reportText}>Submit as idea</button>
+      <button class="" on:click={capturePipeline}>Take Screenshot</button>
     </Container>
   </Card>
 </main>
-
-<style>
-  main {
-    width: 800px;
-  }
-  button {
-    margin-bottom: 10px;
-    background-color: #46908b;
-    color: white;
-    border: none;
-    padding: 1em;
-    border-radius: 5px;
-  }
-  button:hover {
-    background-color: #185e59;
-    color: white;
-  }
-
-  .hidden {
-    display: none;
-  }
-</style>
