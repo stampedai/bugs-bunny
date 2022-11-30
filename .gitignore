@@ -1,5 +1,6 @@
 # Custom
 dist/*.js
+dist/lib/*.js
 dist/popup/bundle.*
 dist.zip
 

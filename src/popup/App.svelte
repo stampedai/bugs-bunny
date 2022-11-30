@@ -6,6 +6,7 @@
     CardBody,
     CardTitle,
     CardSubtitle,
+    Label,
     Alert,
     Container,
     Tooltip,
@@ -14,6 +15,7 @@
   import { draw, restoreDrawings } from "../lib/draw";
   import { captureScreen } from "../lib/capture";
   import { notifySlack } from "../lib/slack";
+  import { createJiraTicket } from "../lib/jira";
   import { annotateWithText, restoreAnnotations } from "../lib/annotate";
   import { uploadImage } from "../lib/base64ToFile";
   import { getUser } from "../lib/getUser";
@@ -30,10 +32,10 @@
   let drawings: any[] = [];
   let annotations: any[] = [];
 
-	const onFileSelected = (e: any) => {
+  const onFileSelected = (e: any) => {
     let file = e.target.files[0];
     filesList.push(file);
-  }
+  };
 
   addEventListener("keydown", (event: KeyboardEvent) => {
     if (reportText) {
@@ -91,13 +93,19 @@
 
   const submitRequest = async (type: string) => {
     let author = await getUser();
-    author.email ? author : author.email = "Unknown";
+    author.email ? author : (author.email = "Unknown");
     if (screenshot.canvas) {
       await uploadImage(screenshot.canvas.toDataURL()).then((res) => {
         if (res) {
           filesList.push(res);
           if (reportText) {
-            notifySlack(`${type}: ${title}`, reportText, filesList, author.email);
+            notifySlack(
+              `${type}: ${title}`,
+              reportText,
+              filesList,
+              author.email
+            );
+            createJiraTicket(type, title, reportText, filesList, author.email);
             reportSubmitted = true;
           }
           return res;
@@ -106,11 +114,13 @@
     } else {
       if (reportText) {
         notifySlack(`${type}: ${title}`, reportText, filesList, author.email);
+        createJiraTicket(type, title, reportText, filesList, author.email);
         reportSubmitted = true;
       }
     }
     (document.getElementById("title") as HTMLInputElement).value = "";
-    (document.getElementById("additionalContext") as HTMLInputElement).value = "";
+    (document.getElementById("additionalContext") as HTMLInputElement).value =
+      "";
     (document.getElementById("files") as HTMLInputElement).value = "";
     title = "";
     reportText = "";
@@ -120,21 +130,25 @@
 
 <svelte:head>
   <style>
-    @import url("https://fonts.googleapis.com/css2?family=Bangers&family=Caveat+Brush&family=Inter:wght@100;200;300;400;500;600;700;800;900&display=swap");
+    @import url('https://fonts.googleapis.com/css2?family=Chivo:wght@900&display=swap');
 
     main {
       width: 800px;
+      background-color: #f4f9f8;
     }
     button {
       margin-bottom: 10px;
-      background-color: #46908b;
+      background-color: #6894b9;
       color: white;
       border: none;
       padding: 1em;
       border-radius: 5px;
+      font-size: small;
+      width: fit-content;
+      height: min-content;
     }
     button:hover {
-      background-color: #185e59;
+      background-color: #6894b950;
       color: white;
     }
 
@@ -606,12 +620,24 @@
   </div>
   <Card
     class="text-center"
-    style="padding: 1rem; background: url('../bugs_bunny.png') left bottom no-repeat; background-size: 35%; border: inset 10px transparent;"
+    style="background: url('../bugs_bunny.png') right top no-repeat; background-size: 50%; border: inset 10px transparent;"
   >
+    <img src="../DB_wordmark_RGB.png" alt="Stamped logo" style="width: 20%; height: auto; margin-left: 0.7em;">
     <CardTitle
-      style="font-family: 'Bangers', cursive; font-size: xx-large; color: #46908b; margin-top: 0; text-align: left;"
+      style="padding-left: 0.3em; font-family: 'Chivo', sans-serif; font-size: 3em; color: #454545; margin-top: 0; text-align: left;"
       >Bugs Bunny</CardTitle
     >
+    <CardSubtitle
+      style="margin-left: 1em; font-size: medium; color: #454545; text-align: left; margin-bottom: 2em;"
+      >Bugs & Feedback Reporting</CardSubtitle
+    >
+    <button style="margin-left: 1em; display: flex;" on:click={capturePipeline}>
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" style="width: 1.5em; height: auto; margin-right: 1em;">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M6.827 6.175A2.31 2.31 0 015.186 7.23c-.38.054-.757.112-1.134.175C2.999 7.58 2.25 8.507 2.25 9.574V18a2.25 2.25 0 002.25 2.25h15A2.25 2.25 0 0021.75 18V9.574c0-1.067-.75-1.994-1.802-2.169a47.865 47.865 0 00-1.134-.175 2.31 2.31 0 01-1.64-1.055l-.822-1.316a2.192 2.192 0 00-1.736-1.039 48.774 48.774 0 00-5.232 0 2.192 2.192 0 00-1.736 1.039l-.821 1.316z" />
+        <path stroke-linecap="round" stroke-linejoin="round" d="M16.5 12.75a4.5 4.5 0 11-9 0 4.5 4.5 0 019 0zM18.75 10.5h.008v.008h-.008V10.5z" />
+      </svg>
+      Take a Screenshot
+    </button>
     <CardBody style="opacity: 0.85;">
       <Alert
         color="success"
@@ -621,20 +647,20 @@
         Sent! Thank you for improving the app! Have a good day {":)"}
       </Alert>
 
-      <FormGroup style="margin-left: 40%;">
+      <FormGroup style="text-align: left;">
+        <Label style="text-align: left;">Descriptive Title</Label>
         <Input
           id="title"
           label="Descriptive Title"
           style="height: 2em; background-color: #f5f5f5; margin-bottom: 1em;"
-          placeholder="Enter a descriptive title"
           bind:value={title}
         />
+        <Label style="text-align: left;">Context</Label>
         <Input
           id="additionalContext"
           type="textarea"
-          label="Give additional context"
+          label="Context"
           style="height: 300px; background-color: #f5f5f5;"
-          placeholder="Give context to help the team understand the request"
           bind:value={reportText}
         />
         <Input
@@ -642,7 +668,7 @@
           type="file"
           label="Attach files"
           style="background-color: #f5f5f5; margin-top: 1em;"
-          on:change={(e)=>onFileSelected(e)}
+          on:change={(e) => onFileSelected(e)}
           bind:this={fileInput}
         />
         <Tooltip target="additionalContext" placement="top"
@@ -651,10 +677,17 @@
       </FormGroup>
     </CardBody>
 
-    <Container style="margin-left: 20%;">
-      <button class="save-button" on:click={() => submitRequest("bug")} disabled={reportSubmitted || !reportText}>Submit as bug</button>
-      <button class="save-button" on:click={() => submitRequest("idea")} disabled={reportSubmitted || !reportText}>Submit as idea</button>
-      <button class="" on:click={capturePipeline}>Take Screenshot</button>
+    <Container style="text-align: left; margin: 0;">
+      <button
+        class="save-button"
+        on:click={() => submitRequest("bug")}
+        disabled={reportSubmitted || !reportText}>Submit as Bug</button
+      >
+      <button
+        class="save-button"
+        on:click={() => submitRequest("idea")}
+        disabled={reportSubmitted || !reportText}>Submit as Feedback</button
+      >
     </Container>
   </Card>
 </main>
