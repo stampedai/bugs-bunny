@@ -111,6 +111,7 @@ const restoreDrawings = (context: CanvasRenderingContext2D, drawings: any[]) => 
     context.lineTo(drawing.x1, drawing.y1);
     context.stroke();
   });
+  return { context, drawings };
 }
 
 export { draw, restoreDrawings };

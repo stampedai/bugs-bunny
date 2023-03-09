@@ -43,6 +43,11 @@ export default [{
     plugins: [typescript()],
   },
   {
+    input: ["src/lib/jira.ts"],
+    output: [{ file: "dist/lib/jira.js", format: "iife", name: "jira" }],
+    plugins: [typescript()],
+  },
+  {
     input: ["src/lib/annotate.ts"],
     output: [
       { file: "dist/lib/annotate.js", format: "iife", name: "annotate" },

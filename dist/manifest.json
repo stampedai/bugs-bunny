@@ -9,7 +9,7 @@
   "content_scripts": [
     {
       "matches": [
-        "*://*/prweb/*"
+        "https://*.stamped.ai/*"
       ],
       "js": [
         "content-scripts.js"
@@ -17,7 +17,6 @@
     }
   ],
   "permissions": [
-    "storage",
     "activeTab",
     "scripting",
     "webRequest",

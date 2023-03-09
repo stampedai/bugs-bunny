@@ -31,6 +31,8 @@
   let filesList: any[] = [];
   let drawings: any[] = [];
   let annotations: any[] = [];
+  let finalCleanImage: any;
+  let cleanImageAspectRatio: any;
 
   const onFileSelected = (e: any) => {
     let file = e.target.files[0];
@@ -41,7 +43,7 @@
     if (reportText) {
       reportSubmitted = false;
     }
-    if (event.ctrlKey && event.key === "z") {
+    if (event.ctrlKey || event.metaKey && event.key === "z") {
       if (screenshot.canvas && screenshot.context && drawings.length > 0) {
         drawings.pop();
         for (let i = drawings.length - 1; i >= 0; i--) {
@@ -84,18 +86,43 @@
     annotateWithText(screenshot.canvas, screenshot.context, annotations);
 
   const capturePipeline = () => {
-    const { canvas, context, image }: any = captureScreen();
-    draw(canvas, context, "", drawings);
-    screenshot = { canvas, context, image };
+    captureScreen().then((res: any) => {
+      let { canvas, context, image, aspectRatio } = res;
+      let valueToMultiplyToAttainOriginalSize = image.naturalHeight / canvas.height;
+      
+      draw(canvas, context, "", drawings);
+      screenshot = { canvas, context, image };
+      
+      finalCleanImage = image;
+      cleanImageAspectRatio = valueToMultiplyToAttainOriginalSize;
+    });
   };
-
-  // add a bi weekly jira update to slack
 
   const submitRequest = async (type: string) => {
     let author = await getUser();
     author.email ? author : (author.email = "Unknown");
-    if (screenshot.canvas) {
-      await uploadImage(screenshot.canvas.toDataURL()).then((res) => {
+    if (screenshot.canvas && finalCleanImage) {
+      
+      const finalDrawings = drawings.map(drawing => {
+        return {
+          x0: drawing.x0 * cleanImageAspectRatio,
+          y0: drawing.y0 * cleanImageAspectRatio,
+          x1: drawing.x1 * cleanImageAspectRatio,
+          y1: drawing.y1 * cleanImageAspectRatio,
+          strokeStyle: drawing.strokeStyle,
+        }
+      })
+
+      let finalCanvas = document.createElement("canvas");
+      let finalCanvasContext = finalCanvas.getContext("2d");
+      finalCanvas.width = finalCleanImage.naturalWidth;
+      finalCanvas.height = finalCleanImage.naturalHeight;
+
+      finalCanvasContext.drawImage(finalCleanImage, 0, 0);
+      
+      restoreDrawings(finalCanvasContext, finalDrawings);
+
+      await uploadImage(finalCanvasContext.canvas.toDataURL()).then((res) => {
         if (res) {
           filesList.push(res);
           if (reportText) {
@@ -159,7 +186,7 @@
 </svelte:head>
 
 <main>
-  <div id="screenshot" />
+  <div id="screenshot" style="overflow-x: scroll;" />
   <div>
     <svg
       id="pen"
