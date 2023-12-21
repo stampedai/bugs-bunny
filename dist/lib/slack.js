@@ -1,7 +1,7 @@
 var slack = (function (exports) {
     'use strict';
 
-    const notifySlack = (title, reportText, files, author) => {
+    const notifySlack = (title, reportText, files, author, currentPageURL) => {
         let id = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
         const channel = "";
         fetch("", {
@@ -16,6 +16,7 @@ var slack = (function (exports) {
                 actionTrace: "Action trace",
                 author: author,
                 id: id,
+                url: currentPageURL,
             }),
         })
             .then((res) => {

@@ -2,7 +2,7 @@ const createJiraTicket = (id: string, title: string, reportText: string, files: 
   const username = "";
   const jiraToken = "";
 
-  fetch("https://stamped.atlassian.net/rest/api/3/issue", {
+  fetch("", {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -36,13 +36,11 @@ const createJiraTicket = (id: string, title: string, reportText: string, files: 
     }),
   })
   .then((res) => {
-    console.log(res);
     res.json().then((data) => {
-      console.log(data);
       files.forEach((file) => {
         const request = new XMLHttpRequest();
         const formData = new FormData();
-        request.open("POST", "https://stamped.atlassian.net/rest/api/3/issue/" + data.key + "/attachments", true);
+        request.open("POST", "" + data.key + "/attachments", true);
         request.setRequestHeader("X-Atlassian-Token", "no-check");
         request.setRequestHeader("Authorization", "Basic " + window.btoa(username + ":" + jiraToken));
         request.onreadystatechange = () => {
@@ -50,7 +48,6 @@ const createJiraTicket = (id: string, title: string, reportText: string, files: 
         };
         formData.append("file", file);
         request.send(formData);
-        console.log(request, formData)
       });
     });
   });

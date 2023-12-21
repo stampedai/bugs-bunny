@@ -105,6 +105,7 @@ var draw = (function (exports) {
             context.lineTo(drawing.x1, drawing.y1);
             context.stroke();
         });
+        return { context, drawings };
     };
 
     exports.draw = draw;

@@ -1,6 +1,8 @@
-const notifySlack = (title: string, reportText: string, files: Array<File>, author: string) => {
+import { env } from "process";
+
+const notifySlack = (title: string, reportText: string, files: Array<File>, author: string, currentPageURL: string) => {
   let id = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
-  const channel = "";
+  const channel = ""
   fetch(
     "",
     {
@@ -15,6 +17,7 @@ const notifySlack = (title: string, reportText: string, files: Array<File>, auth
         actionTrace: "Action trace",
         author: author,
         id: id,
+        url: currentPageURL,
       }),
     }
   )

@@ -101,6 +101,8 @@
   const submitRequest = async (type: string) => {
     let author = await getUser();
     author.email ? author : (author.email = "Unknown");
+    let currentURL = author.url;
+
     if (screenshot.canvas && finalCleanImage) {
       
       const finalDrawings = drawings.map(drawing => {
@@ -130,7 +132,8 @@
               `${type}: ${title}`,
               reportText,
               filesList,
-              author.email
+              author.email,
+              currentURL
             );
             createJiraTicket(type, title, reportText, filesList, author.email);
             reportSubmitted = true;
@@ -140,7 +143,7 @@
       });
     } else {
       if (reportText) {
-        notifySlack(`${type}: ${title}`, reportText, filesList, author.email);
+        notifySlack(`${type}: ${title}`, reportText, filesList, author.email, currentURL);
         createJiraTicket(type, title, reportText, filesList, author.email);
         reportSubmitted = true;
       }

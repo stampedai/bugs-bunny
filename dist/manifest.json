@@ -1,7 +1,7 @@
 {
   "name": "Bugs Bunny",
   "description": "Browser extension for ops to report bugs easily",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "manifest_version": 3,
   "background": {
     "service_worker": "background.js"
@@ -16,9 +16,12 @@
       ]
     }
   ],
+  "host_permissions": [
+    "*://stamped.atlassian.net/*",
+    "*://hooks.slack.com/*"
+  ],
   "permissions": [
     "activeTab",
-    "scripting",
     "webRequest",
     "identity",
     "identity.email",

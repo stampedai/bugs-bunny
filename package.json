@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "build": "rollup -c",
+    "build": "rollup -c && zip -r dist.zip dist",
     "dev": "rollup -c -w"
   },
   "devDependencies": {

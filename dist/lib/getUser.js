@@ -32,7 +32,11 @@ var getUser = (function (exports) {
             chrome.identity.getProfileUserInfo({ 'accountStatus': 'ANY' }, (info) => {
                 const { email, id } = info;
                 user = { email, id };
-                resolve(user);
+                return chrome.tabs.query({ active: true, lastFocusedWindow: true }, (tabs) => {
+                    const url = tabs[0].url;
+                    user.url = url;
+                    resolve(user);
+                });
             });
         });
     });
